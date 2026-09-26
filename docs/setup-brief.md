@@ -4,14 +4,16 @@ Walk Alejandro through setting up a Hetzner Cloud server, one step at a time.
 He does the steps that need him (account, payment, phone scans, browser sign-ins);
 you run everything you can yourself, then verify each step before moving on.
 
-Goal: an always-on box that hosts many parallel AI workers (Claude Code and Codex
-in Orca worktrees), a webhook receiver, and a read-only WhatsApp bridge. Price is
-not a concern; size for lots of concurrent agents and builds.
+Goal: an always-on box that hosts parallel AI workers (Claude Code and Codex
+in Orca worktrees), a webhook receiver, and a read-only WhatsApp bridge. Start
+with 32 GB RAM and at least 256 GB SSD, targeting the roughly €50/month budget
+discussed on 2026-09-26. Check the full price and availability before provisioning.
 
 Cover, in order:
 
-1. Choose the server: dedicated vCPU plan with plenty of RAM and disk, location near
-   Alejandro, Ubuntu LTS. Explain the choice (x86 vs ARM, cloud vs dedicated/auction).
+1. Choose the server: target CX53 (shared x86 vCPUs, 32 GB RAM, 320 GB SSD), a
+   German location, and Ubuntu LTS. Confirm availability; ask before substituting
+   a more expensive plan. Explain the choice (x86 vs ARM, cloud vs dedicated/auction).
 2. Create it with `hcloud` if possible (token from 1Password, personal account), SSH key only.
 3. Harden: non-root user, firewall allowing only SSH and HTTPS, unattended upgrades, backups on.
 4. Tailscale: join the tailnet, then restrict SSH to Tailscale.
