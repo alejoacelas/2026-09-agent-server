@@ -43,8 +43,9 @@ into that vault to make it available to agents.
 
 ## Remaining steps
 
-- [ ] Tailscale on the server and the Mac; then limit SSH to Tailscale.
-- [ ] `orca-ide serve` under systemd, paired to the Mac with `orca environment add`.
-- [ ] `orca-ide account add` for Claude and Codex.
+- [x] Tailscale on the server and the Mac. Public SSH is closed; connect with `ssh agent-server` over Tailscale.
+- [x] `orca-ide serve` under systemd (`server/orca.service`), paired to the Mac as Orca environment `agent-server`.
+- [x] Claude and Codex signed in with their own logins (`~/.claude`, `~/.codex`), independent of Orca.
+  Sign in again with `claude` → `/login` and `codex login --device-auth` (enable device-code login in ChatGPT security settings first).
 - [ ] Val Town endpoint for webhooks; server pulls jobs from it.
 - [ ] whatsapp-mcp bridge as its own user, sending disabled.

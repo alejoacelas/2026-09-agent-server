@@ -1,0 +1,16 @@
+[Unit]
+Description=Orca headless runtime
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+User=alejo
+WorkingDirectory=/home/alejo
+Environment=PATH=/home/alejo/.local/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=-/home/alejo/.config/agent-server/op.env.systemd
+ExecStart=/usr/bin/orca-ide serve --pairing-address agent-server
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
