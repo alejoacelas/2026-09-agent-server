@@ -21,3 +21,9 @@ commit [8c850a3](https://github.com/alejoacelas/2026-09-agent-server/commit/8c85
 
 - 2026-09-26: Prioritize 32 GB RAM and at least 256 GB SSD over dedicated CPU
   capacity. Alejandro selected this size after reviewing the cost tradeoffs.
+
+- 2026-10-03: Prototype search with a public Wikipedia snapshot stored and indexed
+  on Hetzner, exposed only through Tailscale. This measures real remote-search
+  latency without copying personal or employer material. Use title-first keyword
+  search for the launcher interaction; measure corpus-specific needs before
+  adding semantic search. Implementation: [27f7335](https://github.com/alejoacelas/2026-09-agent-server/commit/27f7335).

@@ -66,3 +66,21 @@ The helper source is `~/best/dotfiles/bin/op-agent`; copy it to the server’s
   Sign in again with `claude` → `/login` and `codex login --device-auth` (enable device-code login in ChatGPT security settings first).
 - [ ] Val Town endpoint for webhooks; server pulls jobs from it.
 - [ ] whatsapp-mcp bridge as its own user, sending disabled.
+
+## Search prototype
+
+[Find](http://agent-server/) searches 241,787 Simple English Wikipedia articles
+stored on this server (269 MB text, 815 MB SQLite index). The 2023-11-01 snapshot
+is public; no personal or employer corpus is imported.
+
+`search.service` is an enabled user service for `alejo`, with lingering enabled
+so it survives logout and starts at boot. It runs from
+`~/.local/share/agent-server-search/` and listens on `127.0.0.1:8765`.
+Tailscale Serve proxies tailnet HTTP port 80 to it; no public access or Funnel.
+See [rebuild steps and controls](../search/README.md).
+
+On 2026-10-03, 18 representative requests from the Mac had a 43 ms median total
+request time and 4 ms median server search time. The slowest request was 477 ms;
+server search stayed below 10 ms in that sample. A one-letter query took about
+298 ms including 188 ms searching. These are small-sample observations, not a
+latency guarantee; the UI displays timing for every query.
