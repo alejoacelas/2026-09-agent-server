@@ -16,3 +16,8 @@ WhatsApp data.
 
 - `docs/setup.md` — current server state, secrets locations, and rebuild steps.
 - `docs/delegation.md` — plan for letting delegated tasks run unattended.
+
+The server’s `OP_SERVICE_ACCOUNT_TOKEN` is in personal 1Password account
+`my.1password.com`, vault `Personal`, item `1Password service account agent-server`,
+field `credential`. It grants read-only access to `server-agents`. Use
+`~/.local/bin/op-agent` for unattended retrieval and injection; see `docs/setup.md`.

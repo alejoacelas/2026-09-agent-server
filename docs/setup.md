@@ -28,8 +28,25 @@ Check real availability with the `locations[].available` field of
 
 Rebuild the Mac's `.env` with `op inject --account my.1password.com -i .env.tpl -o .env`.
 On the server the service-account token is in `~/.config/agent-server/op.env`
-(mode 600). It can read only the 1Password vault `agent-server`; copy an item
+(mode 600). It can read only the 1Password vault `server-agents`; copy an item
 into that vault to make it available to agents.
+
+The existing server vault was renamed from `agent-server`; its token remains valid.
+The Mac has a separate read-only service account for `mac-agents`, also in the
+personal 1Password account.
+
+Use `~/.local/bin/op-agent` on the server or `~/best/dotfiles/bin/op-agent` on the
+Mac. It loads the machine’s service-account token and forwards arguments to `op`.
+For example, `op-agent run --env-file .env.tpl -- your-command` injects references
+to that machine’s agent vault without approval prompts. Ordinary `op` on the Mac
+retains its interactive authentication for other vaults.
+
+The Mac token is stored in `~/.config/mac-agents/.env` (mode 600, directory 700).
+Rebuild it from `my.1password.com` › `Personal` ›
+`1Password service account mac-agents` › `credential`, assigning the value to
+`OP_SERVICE_ACCOUNT_TOKEN`. Keep both bootstrap tokens outside the agent vaults.
+The helper source is `~/best/dotfiles/bin/op-agent`; copy it to the server’s
+`~/.local/bin/op-agent` when rebuilding.
 
 ## Rebuild
 

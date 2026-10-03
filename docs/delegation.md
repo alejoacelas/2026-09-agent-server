@@ -79,7 +79,7 @@ reads the screen instead.
 
 ## Access
 
-- 1Password: a service account that can only read the vault `agent-server`. Copy
+- 1Password: a service account that can only read the vault `server-agents`. Copy
   an item into that vault to give agents access to it. Items that hold TOTP
   secrets let agents fill 2FA codes (`op item get --otp`).
 - Websites: Browser Use cloud profiles (`bu-cloud`), refreshed from local Chrome
