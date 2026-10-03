@@ -3,6 +3,7 @@ import argparse
 import json
 import re
 import sqlite3
+import socket
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -30,18 +31,36 @@ def search(db, query):
     deadline = time.perf_counter() + 1
     db.set_progress_handler(lambda: time.perf_counter() > deadline, 1000)
     try:
-        return [dict(r) for r in db.execute("""
+        # A launcher should find the named article before incidental body mentions.
+        rows = [dict(r) for r in db.execute("""
           SELECT rowid AS id, title,
                  snippet(search, 1, char(1), char(2), '…', 30) AS snippet
-          FROM search WHERE search MATCH ? AND rank MATCH 'bm25(12.0, 1.0)'
-          ORDER BY rank LIMIT 30
-        """, (term,))]
+          FROM search WHERE search MATCH ?
+          ORDER BY (title = ? COLLATE NOCASE) DESC,
+                   (substr(title, 1, length(?)) = ? COLLATE NOCASE) DESC,
+                   bm25(search, 12.0, 1.0)
+          LIMIT 30
+        """, ('title : (' + term + ')', query.strip(), query.strip(), query.strip()))]
+        if len(rows) < 30 and len(query.strip()) >= 2:
+            seen = {r['id'] for r in rows}
+            body = db.execute("""
+              SELECT rowid AS id, title,
+                     snippet(search, 1, char(1), char(2), '…', 30) AS snippet
+              FROM search WHERE search MATCH ? AND rank MATCH 'bm25(12.0, 1.0)'
+              ORDER BY rank LIMIT 60
+            """, (term,))
+            rows.extend(dict(r) for r in body if r['id'] not in seen)
+        return rows[:30]
     finally:
         db.set_progress_handler(None, 0)
 
 
 class Handler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
+
+    def setup(self):
+        super().setup()
+        self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
     def send(self, value, status=200, mime='application/json; charset=utf-8'):
         body = json.dumps(value, ensure_ascii=False).encode() if mime.startswith('application/json') else value

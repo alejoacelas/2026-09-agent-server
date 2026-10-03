@@ -108,3 +108,5 @@ fetch('/api/stats').then(r=>{if(!r.ok)throw Error();return r.json();}).then(s=>{
   $('library-size').textContent=s.articles.toLocaleString()+' articles · '+Math.round(s.text_bytes/1e6)+' MB of searchable text';
 }).catch(()=>{$('corpus').textContent='Library unavailable';$('library-size').textContent='Refresh to reconnect';});
 idle();
+
+$('back').onclick=()=>{document.querySelector('.palette').classList.remove('reading');input.focus();};

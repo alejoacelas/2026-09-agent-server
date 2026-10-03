@@ -6,7 +6,7 @@ Open **http://agent-server/** while connected to Tailscale.
 
 Type to search, use ↑/↓ to select a result, and Enter to focus the full article.
 Escape returns to search or clears the query; ⌘K focuses search. On small screens,
-tap a result to read it and Escape to return. The footer measures request time
+tap a result to read it and use Results to return. The footer measures request time
 (including response parsing) and server search time separately. The 80 ms typing
 pause and rendering time are not included in that footer measurement.
 
@@ -19,7 +19,9 @@ Text is licensed under [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa
 and GFDL; the UI displays attribution. No personal files are imported.
 
 SQLite FTS5 indexes titles and bodies, weights title matches more heavily, and
-matches the final word as a prefix. All words must match. It returns up to 30
+matches the final word as a prefix. Exact titles come first, followed by other
+title matches, then body matches. Single-character queries search titles only.
+All words must match. It returns up to 30
 ranked results; this is keyword search, without semantic embeddings or typo
 correction. Superseded browser requests are cancelled and stale responses ignored.
 Server queries stop after one second. Aborting a browser request does not itself
@@ -45,6 +47,7 @@ cp search/{index.py,server.py,index.html,app.js,style.css} "$runtime/"
   "$runtime/data/wikipedia.parquet" "$runtime/data/search.sqlite"
 cp search/search.service "$HOME/.config/systemd/user/"
 systemctl --user daemon-reload
+sudo loginctl enable-linger "$USER"
 systemctl --user enable --now search.service
 sudo tailscale serve --bg --http=80 http://127.0.0.1:8765
 ```

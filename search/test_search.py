@@ -19,7 +19,11 @@ class SearchTest(unittest.TestCase):
         rows = search(self.db, 'quantum mec')
         self.assertEqual(rows[0]['title'], 'Quantum mechanics')
         self.assertEqual(len(rows), 2)
-        self.assertIn('\x01', rows[0]['snippet'])
+        self.assertIn('\x01', rows[1]['snippet'])
+
+    def test_exact_title_beats_short_incidental_mentions(self):
+        self.db.execute('INSERT INTO search(title,text) VALUES(?,?)', ('Quantum mechanics', 'Quantum mechanics. ' + 'A long explanation. ' * 500))
+        self.assertEqual(search(self.db, 'Quantum mechanics')[0]['title'], 'Quantum mechanics')
 
     def test_untrusted_syntax_is_literal(self):
         for q in ['"', '*', '() :', 'OR NOT', '" OR 1=1 --']:
