@@ -70,18 +70,16 @@ The helper source is `~/best/dotfiles/bin/op-agent`; copy it to the server’s
 ## Codex launches in Orca
 
 The server's Orca Codex launch arguments are
-`--dangerously-bypass-approvals-and-sandbox --no-daemon`. Keep `--no-daemon` when
-changing these defaults so each terminal runs independently of Codex's shared
-daemon. The Mac client also has Settings → Agents → “Run each Codex terminal on
-its own server” enabled; launch arguments supplied by a client can override the
-server defaults.
+`--dangerously-bypass-approvals-and-sandbox`, allowing Codex's shared daemon.
+The Mac client's Settings → Agents → “Run each Codex terminal on its own server”
+is off. Launch arguments supplied by a client can override the server defaults.
 
 The server setting was applied through Orca's runtime `settings.update` method
 (`agentDefaultArgs.codex`) and verified through `settings.get` and the saved
 `~/.config/orca/profiles/local-default/orca-data.json`. Preserve the other agents'
 arguments when updating the map. New defaults apply to new launches; an existing
 session or a restored launch may retain its original arguments. For a manually
-started session, run `codex --dangerously-bypass-approvals-and-sandbox --no-daemon`.
+started session, run `codex --dangerously-bypass-approvals-and-sandbox`.
 
 ## Search prototype
 
