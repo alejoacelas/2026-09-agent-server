@@ -19,10 +19,8 @@ commit [8c850a3](https://github.com/alejoacelas/2026-09-agent-server/commit/8c85
 
 ## Decision log
 
-- 2026-10-03: Launch Codex in Orca with `--no-daemon` to keep terminals independent
-  of the shared daemon. A server session launched with full access later recorded
-  sandboxed turns while its CLI and daemon versions differed; the cause of that
-  permission change is unconfirmed. Configuration: [0617bb4](https://github.com/alejoacelas/2026-09-agent-server/commit/0617bb4).
+- 2026-10-03: Use Codex's shared daemon for new Orca sessions on the server and
+  Mac, at Alejandro's request. Configuration: [a1f2590](https://github.com/alejoacelas/2026-09-agent-server/commit/a1f2590).
 
 - 2026-09-26: Prioritize 32 GB RAM and at least 256 GB SSD over dedicated CPU
   capacity. Alejandro selected this size after reviewing the cost tradeoffs.
