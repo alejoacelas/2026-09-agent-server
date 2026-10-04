@@ -35,6 +35,13 @@ The existing server vault was renamed from `agent-server`; its token remains val
 The Mac has a separate read-only service account for `mac-agents`, also in the
 personal 1Password account.
 
+Agent-vault items are copies of approved items in `Personal`, preserving existing
+`op://Personal/...` references. Copies do not synchronize: when rotating a
+credential, update the original and each approved agent-vault copy. Copied items
+carry an `agent-copy-source/<original-item-id>` tag for matching, including when
+two originals have the same title. Use item IDs in secret references for those
+ambiguous titles. Keep inventories containing private item names off this repository.
+
 Use `~/.local/bin/op-agent` on the server or `~/best/dotfiles/bin/op-agent` on the
 Mac. It loads the machine’s service-account token and forwards arguments to `op`.
 For example, `op-agent run --env-file .env.tpl -- your-command` injects references
