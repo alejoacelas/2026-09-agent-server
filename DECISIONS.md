@@ -30,3 +30,10 @@ commit [8c850a3](https://github.com/alejoacelas/2026-09-agent-server/commit/8c85
   latency without copying personal or employer material. Use title-first keyword
   search for the launcher interaction; measure corpus-specific needs before
   adding semantic search. Implementation: [27f7335](https://github.com/alejoacelas/2026-09-agent-server/commit/27f7335).
+
+- 2026-10-04: Copy approved credentials into separate Mac and server agent vaults
+  in personal 1Password, preserving originals and existing secret references. Keep
+  work/advising items Mac-only and exclude 1Password account credentials, bootstrap
+  tokens, identity/payment records, and the migration note from both agent vaults.
+  Copies need explicit updates during rotation; see [setup](docs/setup.md) and
+  [c4ea335](https://github.com/alejoacelas/2026-09-agent-server/commit/c4ea335).
