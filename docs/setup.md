@@ -70,6 +70,8 @@ The helper source is `~/best/dotfiles/bin/op-agent`; copy it to the server’s
 - [x] Tailscale on the server and the Mac. Public SSH is closed; connect with `ssh agent-server` over Tailscale.
 - [x] `orca-ide serve` under systemd (`server/orca.service`), paired to the Mac as Orca environment `agent-server`.
 - [x] Claude and Codex signed in with their own logins (`~/.claude`, `~/.codex`), independent of Orca.
+- [x] GitHub CLI signed in as `alejoacelas` (`gh auth login --web`, HTTPS, set up as git's credential helper);
+  git commits as Alejandro Acelas <alejoacelas@gmail.com>.
   Sign in again with `claude` → `/login` and `codex login --device-auth` (enable device-code login in ChatGPT security settings first).
 - [ ] Val Town endpoint for webhooks; server pulls jobs from it.
 - [ ] whatsapp-mcp bridge as its own user, sending disabled.
@@ -105,3 +107,11 @@ request time and 4 ms median server search time. The slowest request was 477 ms;
 server search stayed below 10 ms in that sample. A one-letter query took about
 298 ms including 188 ms searching. These are small-sample observations, not a
 latency guarantee; the UI displays timing for every query.
+
+## Mail digest
+
+The weekly mail digest page from
+[gmail-sorting](/Users/alejo/best/projects/2026-10-24-gmail-sorting/AGENTS.md)
+runs as the user service `gmail-review.service` on `127.0.0.1:8771`.
+Tailscale Serve proxies `https://agent-server.tail622085.ts.net/mail` to it
+(tailnet only). The project's AGENTS.md covers deploys and data.
