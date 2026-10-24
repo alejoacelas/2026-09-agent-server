@@ -108,6 +108,22 @@ server search stayed below 10 ms in that sample. A one-letter query took about
 298 ms including 188 ms searching. These are small-sample observations, not a
 latency guarantee; the UI displays timing for every query.
 
+## Google CLI (gog)
+
+`gog` v0.35.0, the same version as the Mac, is in `~/.local/lib/gog/`. Run it through
+the wrapper `~/.local/bin/gog`, which loads `~/.config/gogcli/keyring.env` (mode 600:
+`GOG_KEYRING_BACKEND=file` and a random `GOG_KEYRING_PASSWORD`) because the server has
+no system keychain. Encrypted tokens are in `~/.local/share/gogcli/keyring/`.
+
+It holds the Mac's three accounts: `alejoacelas@gmail.com` and `alejo@impact-ops.org`
+on the `default` OAuth client, `alejo@habere.org` on `habere`. They were copied from
+the Mac on 2026-10-24 rather than signed in again: client files from
+`~/Library/Application Support/gogcli/`, client secrets from the Keychain items
+`gogcli` › `client/<client>/client-secret` (loaded with `gog --client <client> auth
+credentials set`), and refresh tokens with `gog auth tokens export` and `import`.
+Check with `gog auth doctor --check`. The habere account has no Gmail and no Drive
+access on either machine.
+
 ## Mail digest
 
 The weekly mail digest page from
