@@ -14,6 +14,10 @@ Use the personal identity (`alejoacelas@gmail.com`) for cloud writes. Keep no
 (account, vault, item, field). Never commit tokens, IPs of private services, or
 WhatsApp data.
 
+Run agent work as the `agent` user (`sudo -iu agent`), never as `alejo`. It
+reaches Alejo's GitHub and Google accounts through the credential broker and
+never holds the tokens; see [Agent user](docs/setup.md#agent-user).
+
 - `docs/setup.md` — current server state, secrets locations, and rebuild steps.
 - `docs/delegation.md` — plan for letting delegated tasks run unattended.
 

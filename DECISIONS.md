@@ -2,6 +2,10 @@
 
 ## Core decisions
 
+### Agent isolation
+
+- [Agent work runs as the `agent` user; credentials stay with a broker running as `alejo`.](#agent-user)
+
 ### Initial capacity and cost
 
 - [Start with 32 GB RAM and at least 256 GB SSD; shared CPU is acceptable.](#initial-server)
@@ -16,6 +20,19 @@ cost too much for an unmeasured workload. Increase capacity when observed memory
 storage, or CPU contention delays useful work; ask before a costlier substitution.
 The selected starting point is recorded in [setup.md](docs/setup.md) and
 commit [8c850a3](https://github.com/alejoacelas/2026-09-agent-server/commit/8c850a3).
+
+### Agent user
+
+Comment-driven mail runs and errands were given full access (shell, all
+connectors, the web, Alejo's Chrome) on 2026-10-24. As `alejo` that would also
+have exposed passwordless sudo, the 1Password service-account token, the GitHub
+token, gog's refresh tokens for all three Google identities, a deploy key and
+other services' environments. Agent sessions therefore run as `agent`, without
+sudo or access to `/home/alejo`, and use Alejo's GitHub and Google accounts
+through [the broker](server/agent-broker/broker.py), which performs actions
+and adds secrets to requests but never returns them. Keep new credentials
+behind the broker rather than in `agent`'s files. The Chrome relay and the
+claude.ai connectors remain account-wide powers the broker doesn't cover.
 
 ## Decision log
 
@@ -37,3 +54,6 @@ commit [8c850a3](https://github.com/alejoacelas/2026-09-agent-server/commit/8c85
   tokens, identity/payment records, and the migration note from both agent vaults.
   Copies need explicit updates during rotation; see [setup](docs/setup.md) and
   [c4ea335](https://github.com/alejoacelas/2026-09-agent-server/commit/c4ea335).
+
+- 2026-10-24: Agent work moved to the `agent` user, with a credential broker for
+  `gh`, `gog` and git pushes, at Alejandro's request.

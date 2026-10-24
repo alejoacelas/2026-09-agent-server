@@ -55,6 +55,40 @@ Rebuild it from `my.1password.com` › `Personal` ›
 The helper source is `~/best/dotfiles/bin/op-agent`; copy it to the server’s
 `~/.local/bin/op-agent` when rebuilding.
 
+## Agent user
+
+Agent work on the server runs as the Unix user `agent`, not `alejo`: the mail
+jobs and review page, and any Claude Code or Codex session started for
+delegated work (`ssh agent-server`, then `sudo -iu agent`). It has no sudo and
+can't read `/home/alejo` (mode 750), so it can't read Alejo's tokens: the
+1Password service-account token, the GitHub token, gog's keyring, Claude's
+login, or other services' environments. `agent` has its own Claude Code login
+to the same claude.ai account (connectors and the Chrome relay come with it),
+lingering enabled for its user services, and git commits as Alejandro Acelas.
+Codex isn't signed in for `agent`.
+
+The credential broker, [server/agent-broker](../server/agent-broker/broker.py),
+runs as `alejo` (`agent-broker.service`, installed in
+`~/.local/lib/agent-broker/`) and acts for `agent` without handing over
+secrets:
+
+- `gh` and `gog` in `agent`'s `~/.local/bin` are
+  [client.py](../server/agent-broker/client.py), which sends the command over
+  `/srv/agent-broker/broker.sock`. The broker runs it as `alejo` from an empty
+  folder and refuses `auth`, `config`, extensions, SSH and GPG keys,
+  `--access-token`, `--home`, and any file path outside `/srv/agent-share`
+  (`alejo:agent`, mode 2770), the folder for files passed between them.
+- An HTTP proxy on `127.0.0.1:8790` forwards `/<route>/...` and adds that
+  route's secret ([routes.json](../server/agent-broker/routes.json)). `agent`'s
+  git rewrites `https://github.com/` to `http://127.0.0.1:8790/github/`, so
+  clones and pushes use Alejo's GitHub token without seeing it. Add a route
+  with an `op://server-agents/...` reference to give agents an API key the
+  same way, then restart the broker.
+
+Deliberate exceptions: the plans and mood Telegram bots still run Claude as
+`alejo`, with Bash, web access and credential reads denied in their own
+settings, because they edit files `alejo` owns.
+
 ## Rebuild
 
 1. `hcloud server create --name agent-server --type cx33 --image ubuntu-24.04 --location nbg1 --ssh-key alejo-mac --firewall agent-server --user-data-from-file <cloud-init with key filled in>`,
@@ -64,6 +98,14 @@ The helper source is `~/best/dotfiles/bin/op-agent`; copy it to the server’s
    1Password CLI, Tailscale, Claude Code, Codex, and Orca, and adds 8 GB swap.
 4. Put the service-account token in `~/.config/agent-server/op.env`.
 5. Sign-ins that need Alejandro: Tailscale, Claude, Codex, and pairing Orca (below).
+6. Agent user: `sudo useradd -m -s /bin/bash agent`, `sudo chmod 750 /home/agent`,
+   `sudo usermod -aG agent alejo`, `sudo loginctl enable-linger agent`; install
+   Claude Code as `agent` and sign in (`sudo -iu agent claude`, then `/login`).
+   Create `/srv/agent-broker` (`alejo:agent`, 2750), `/srv/agent-broker/empty`
+   (`alejo`, 555) and `/srv/agent-share` (`alejo:agent`, 2770); copy
+   `server/agent-broker/` to `~/.local/lib/agent-broker/`, enable its service,
+   install `client.py` as `agent`'s `~/.local/bin/gh` and `gog`, and set
+   `agent`'s git `url.http://127.0.0.1:8790/github/.insteadOf https://github.com/`.
 
 ## Remaining steps
 
@@ -126,8 +168,9 @@ access on either machine.
 
 ## Mail digest
 
-The weekly mail digest page from
+The mail digest page from
 [gmail-sorting](/Users/alejo/best/projects/2026-10-24-gmail-sorting/AGENTS.md)
-runs as the user service `gmail-review.service` on `127.0.0.1:8771`.
-Tailscale Serve proxies `https://agent-server.tail622085.ts.net/mail` to it
-(tailnet only). The project's AGENTS.md covers deploys and data.
+runs as `agent`'s user service `gmail-review.service` on `127.0.0.1:8771`,
+with the mail jobs on `agent`'s timers. Tailscale Serve proxies
+`https://agent-server.tail622085.ts.net/mail` to it (tailnet only). The
+project's AGENTS.md covers deploys and data.

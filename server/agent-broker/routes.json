@@ -1,0 +1,3 @@
+{
+  "github": {"upstream": "https://github.com", "header": "Authorization", "secret": "gh", "basic": true}
+}
