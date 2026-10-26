@@ -86,8 +86,13 @@ secrets:
   same way, then restart the broker.
 
 Deliberate exceptions: the plans and mood Telegram bots still run Claude as
-`alejo`, with Bash, web access and credential reads denied in their own
-settings, because they edit files `alejo` owns.
+`alejo`, because they edit files `alejo` owns. The plans bot has Bash, web
+access and credential reads denied in its own settings. The mood bot runs Bash
+in Claude Code's sandbox (bubblewrap), with communications connectors, their
+credentials and their domains blocked; see `checkin/claude-settings.json` in
+the mood repository. The sandbox needs `bubblewrap`, `socat` and the AppArmor
+profile `/etc/apparmor.d/bwrap`, which lets `/usr/bin/bwrap` create user
+namespaces under Ubuntu 24.04's restriction; `bootstrap.sh` installs all three.
 
 ## Rebuild
 

@@ -28,7 +28,18 @@ if [ ! -f /etc/apt/sources.list.d/1password.list ]; then
 fi
 command -v tailscale >/dev/null || curl -fsSL https://tailscale.com/install.sh | sh
 sudo apt-get update -qq
-sudo apt-get install -y -qq nodejs gh 1password-cli golang-go python3-venv ripgrep unzip >/dev/null
+sudo apt-get install -y -qq nodejs gh 1password-cli golang-go python3-venv ripgrep unzip bubblewrap socat >/dev/null
+# Claude Code's sandbox runs bwrap, which Ubuntu 24.04 blocks from creating user namespaces without this profile.
+sudo tee /etc/apparmor.d/bwrap >/dev/null <<'EOF'
+abi <abi/4.0>,
+include <tunables/global>
+
+profile bwrap /usr/bin/bwrap flags=(unconfined) {
+  userns,
+  include if exists <local/bwrap>
+}
+EOF
+sudo apparmor_parser -r /etc/apparmor.d/bwrap
 # Orca is an Electron app; its package doesn't declare these runtime libraries.
 sudo apt-get install -y -qq libasound2t64 libgtk-3-0t64 libnss3 libgbm1 libxss1 libxshmfence1 libdrm2 libnotify4 libsecret-1-0 xvfb >/dev/null
 
