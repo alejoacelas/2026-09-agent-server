@@ -6,6 +6,10 @@
 
 - [Agent work runs as the `agent` user; credentials stay with a broker running as `alejo`.](#agent-user)
 
+### Access
+
+- [SSH uses OpenSSH keys over Tailscale, the same as between the Macs; Tailscale SSH is off.](#ssh-access)
+
 ### Initial capacity and cost
 
 - [Start with 32 GB RAM and at least 256 GB SSD; shared CPU is acceptable.](#initial-server)
@@ -34,6 +38,15 @@ and adds secrets to requests but never returns them. Keep new credentials
 behind the broker rather than in `agent`'s files. The Chrome relay and the
 claude.ai connectors remain account-wide powers the broker doesn't cover.
 
+### SSH access
+
+The Macs reach each other with OpenSSH keys because the Tailscale Mac app cannot
+serve Tailscale SSH. The server now matches, so one mechanism governs all three
+machines. Tailscale SSH's check mode needs a browser re-login at least weekly,
+which blocks unattended agents; `accept` mode would instead admit every tailnet
+device. Revisit Tailscale SSH everywhere if the machine count grows enough that
+per-machine key lists become a chore.
+
 ## Decision log
 
 - 2026-10-03: Use Codex's shared daemon for new Orca sessions on the server and
@@ -57,3 +70,6 @@ claude.ai connectors remain account-wide powers the broker doesn't cover.
 
 - 2026-10-24: Agent work moved to the `agent` user, with a credential broker for
   `gh`, `gog` and git pushes, at Alejandro's request.
+
+- 2026-10-26: Turn off Tailscale SSH and use OpenSSH keys over Tailscale, matching the
+  Macs, so unattended agents on either Mac can reach the server.

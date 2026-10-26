@@ -7,9 +7,11 @@ Current state of the agent server and how to rebuild it.
 - Hetzner Cloud project `agent-server`, personal account (`alejoacelas@gmail.com`).
 - Server `agent-server`: CX33 (4 x86 vCPU, 8 GB RAM, 80 GB disk), Nuremberg,
   Ubuntu 24.04, backups on. €11.99/month plus 20% for backups.
-- Hetzner firewall `agent-server` allows inbound SSH (22/tcp) and Tailscale (41641/udp) only.
-- SSH as `alejo` with the Mac's `~/.ssh/id_ed25519` key (Hetzner key `alejo-mac`).
-  Root login and password login are disabled.
+- Hetzner firewall `agent-server` allows inbound Tailscale (41641/udp) only, so SSH
+  is reachable only over Tailscale.
+- SSH as `alejo` with OpenSSH key login. `~/.ssh/authorized_keys` holds both Macs'
+  `~/.ssh/id_ed25519` keys (Hetzner key `alejo-mac` is the main Mac's). Root login
+  and password login are disabled. Tailscale SSH is off (`tailscale set --ssh=false`).
 
 Why this size: in September 2026 Hetzner's ARM (CAX) plans and the larger CX plans
 were sold out in every location, and the June 2026 price rise made the CPX plans
