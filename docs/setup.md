@@ -80,7 +80,11 @@ secrets:
   folder and refuses `auth`, `config`, extensions, SSH and GPG keys,
   `--access-token`, `--home`, and any file path outside `/srv/agent-share`
   (`alejo:agent`, mode 2770), the folder for files passed between them.
-- An HTTP proxy on `127.0.0.1:8790` forwards `/<route>/...` and adds that
+  Share files the command names are copied into a folder only `alejo` can
+  open, and new or changed ones copied back, so `agent` can't swap a checked
+  path for a symlink to Alejo's files before `gh` or `gog` opens it.
+- An HTTP proxy on `127.0.0.1:8790` (only under that name, so a web page
+  can't reach it by rebinding a domain) forwards `/<route>/...` and adds that
   route's secret ([routes.json](../server/agent-broker/routes.json)). `agent`'s
   git rewrites `https://github.com/` to `http://127.0.0.1:8790/github/`, so
   clones and pushes use Alejo's GitHub token without seeing it. Add a route

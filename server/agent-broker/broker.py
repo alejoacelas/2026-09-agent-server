@@ -13,9 +13,12 @@ Runs as alejo. Two front doors:
 
 import json
 import os
+import shutil
 import socket
 import socketserver
+import stat
 import subprocess
+import tempfile
 import threading
 import urllib.error
 import urllib.request
@@ -65,6 +68,113 @@ def check(argv):
     return None
 
 
+def share_parts(value: str):
+    """The share path that value, or its part after "=" or "@", names (always a suffix of value),
+    and its components below the share; None if it names none."""
+    for v in (value, value.split("=", 1)[-1]):
+        v = v.lstrip("@")
+        if v.startswith(str(SHARE)):
+            rel = os.path.relpath(os.path.normpath(v), SHARE)
+            if rel == "." or not rel.startswith(".."):
+                return v, [] if rel == "." else rel.split("/")
+    return None
+
+
+def open_share_dir(parts, create=False):
+    """A descriptor for SHARE/parts, opened one component at a time without following symlinks."""
+    fd = os.open(SHARE, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        for part in parts:
+            if create:
+                try:
+                    os.mkdir(part, 0o2770, dir_fd=fd)
+                except FileExistsError:
+                    pass
+            fd, old = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd), fd
+            os.close(old)
+    except BaseException:
+        os.close(fd)
+        raise
+    return fd
+
+
+def copy_in(dir_fd, name, dest: Path):
+    """Copy dir_fd/name (a file or folder; symlinks and other kinds are skipped) to dest."""
+    try:
+        fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=dir_fd)
+    except FileNotFoundError:
+        return
+    except OSError:  # a symlink (ELOOP) or something we can't open
+        return
+    try:
+        st = os.fstat(fd)
+        if stat.S_ISREG(st.st_mode):
+            with open(fd, "rb", closefd=False) as src, open(dest, "wb") as dst:
+                shutil.copyfileobj(src, dst)
+        elif stat.S_ISDIR(st.st_mode):
+            dest.mkdir(exist_ok=True)
+            for entry in os.listdir(fd):
+                copy_in(fd, entry, dest / entry)
+    finally:
+        os.close(fd)
+
+
+def copy_back(staged: Path, parts, before):
+    """Write files under staged that are new or changed since staging back to SHARE/parts."""
+    paths = [staged] if staged.is_file() else sorted(p for p in staged.rglob("*") if p.is_file()) if staged.is_dir() else []
+    for p in paths:
+        st = p.stat()
+        if before.get(p) == (st.st_size, st.st_mtime_ns):
+            continue
+        rel = parts + list(p.relative_to(staged).parts) if p != staged else parts
+        dir_fd = open_share_dir(rel[:-1], create=True)
+        try:
+            fd = os.open(rel[-1], os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW, 0o660, dir_fd=dir_fd)
+            with open(fd, "wb") as dst, open(p, "rb") as src:
+                shutil.copyfileobj(src, dst)
+        finally:
+            os.close(dir_fd)
+
+
+def stage(argv, tmp: Path):
+    """Point share paths in argv at copies in tmp, a folder only alejo can open. check() resolves
+    symlinks, but agent could swap a checked path for a symlink to Alejo's files before gh or gog
+    opens it; the copies can't be swapped. Returns the new argv and what to copy back."""
+    out, staged = [], []
+    for i, a in enumerate(argv):
+        found = share_parts(a) if i else None
+        if not found:
+            out.append(a)
+            continue
+        v, parts = found
+        dest = tmp / str(i) / "share"
+        dest.mkdir(parents=True)
+        if parts:
+            dest = dest.joinpath(*parts)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                dir_fd = open_share_dir(parts[:-1])
+            except FileNotFoundError:  # an output path in a folder the command will create
+                dir_fd = None
+            if dir_fd is not None:
+                try:
+                    copy_in(dir_fd, parts[-1], dest)
+                finally:
+                    os.close(dir_fd)
+        else:
+            dir_fd = open_share_dir([])
+            try:
+                for entry in os.listdir(dir_fd):
+                    copy_in(dir_fd, entry, dest / entry)
+            finally:
+                os.close(dir_fd)
+        files = [dest] if dest.is_file() else dest.rglob("*") if dest.is_dir() else []
+        before = {p: (p.stat().st_size, p.stat().st_mtime_ns) for p in files if p.is_file()}
+        staged.append((dest, parts, before, v))
+        out.append(a[: len(a) - len(v)] + str(dest))
+    return out, staged
+
+
 class Commands(socketserver.StreamRequestHandler):
     def handle(self):
         try:
@@ -76,9 +186,16 @@ class Commands(socketserver.StreamRequestHandler):
             else:
                 env = {"PATH": "/usr/local/bin:/usr/bin:/bin", "HOME": str(HOME), "LANG": "C.UTF-8",
                        "GIT_CEILING_DIRECTORIES": str(EMPTY.parent), "GH_PROMPT_DISABLED": "1", "NO_COLOR": "1"}
-                out = subprocess.run([BIN[argv[0]], *argv[1:]], input=req.get("stdin", ""), cwd=EMPTY, env=env,
-                                     capture_output=True, text=True, timeout=600)
-                reply = {"code": out.returncode, "stdout": out.stdout, "stderr": out.stderr}
+                with tempfile.TemporaryDirectory(prefix="agent-broker-") as tmp:
+                    staged_argv, staged = stage(argv, Path(tmp))
+                    out = subprocess.run([BIN[argv[0]], *staged_argv[1:]], input=req.get("stdin", ""), cwd=EMPTY,
+                                         env=env, capture_output=True, text=True, timeout=600)
+                    for dest, parts, before, _ in staged:
+                        copy_back(dest, parts, before)
+                    stdout, stderr = out.stdout, out.stderr
+                    for dest, _, _, v in staged:  # show the agent its own paths
+                        stdout, stderr = stdout.replace(str(dest), v), stderr.replace(str(dest), v)
+                reply = {"code": out.returncode, "stdout": stdout, "stderr": stderr}
         except Exception as e:  # report, don't crash the broker
             reply = {"code": 1, "stdout": "", "stderr": f"agent-broker: {e}\n"}
         self.wfile.write((json.dumps(reply) + "\n").encode())
@@ -119,6 +236,10 @@ class Proxy(BaseHTTPRequestHandler):
         pass
 
     def forward(self):
+        # A web page that rebinds its own domain to 127.0.0.1 would arrive under its own name.
+        if self.headers.get("Host") not in ("127.0.0.1:8790", "localhost:8790"):
+            self.send_error(403, "unknown host")
+            return
         name, _, rest = self.path.lstrip("/").partition("/")
         route = ROUTES.get(name)
         if not route:
