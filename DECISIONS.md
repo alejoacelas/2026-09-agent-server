@@ -73,3 +73,9 @@ per-machine key lists become a chore.
 
 - 2026-10-26: Turn off Tailscale SSH and use OpenSSH keys over Tailscale, matching the
   Macs, so unattended agents on either Mac can reach the server.
+
+- 2026-10-27: Every web page open on a tailnet device can send requests to tailnet
+  services, so each service here refuses writes a browser marks as cross-site
+  (`Sec-Fetch-Site`), and tailnet membership is never treated as authentication.
+  The same review turned on `ufw` (tailnet only), automatic reboots for updates,
+  broker copies of share files, and retired Orca.

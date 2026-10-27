@@ -8,7 +8,10 @@ Current state of the agent server and how to rebuild it.
 - Server `agent-server`: CX33 (4 x86 vCPU, 8 GB RAM, 80 GB disk), Nuremberg,
   Ubuntu 24.04, backups on. €11.99/month plus 20% for backups.
 - Hetzner firewall `agent-server` allows inbound Tailscale (41641/udp) only, so SSH
-  is reachable only over Tailscale.
+  is reachable only over Tailscale. `ufw` on the server does the same (allow
+  `tailscale0` and 41641/udp), in case the Hetzner firewall is ever detached.
+- Unattended upgrades also cover tailscale, gh, nodejs and 1password-cli, and
+  reboot at 04:30 UTC when an update needs it (`/etc/apt/apt.conf.d/52agent-server`).
 - SSH as `alejo` with OpenSSH key login. `~/.ssh/authorized_keys` holds both Macs'
   `~/.ssh/id_ed25519` keys (Hetzner key `alejo-mac` is the main Mac's). Root login
   and password login are disabled. Tailscale SSH is off (`tailscale set --ssh=false`).
@@ -121,7 +124,7 @@ namespaces under Ubuntu 24.04's restriction; `bootstrap.sh` installs all three.
 ## Remaining steps
 
 - [x] Tailscale on the server and the Mac. Public SSH is closed; connect with `ssh agent-server` over Tailscale.
-- [x] `orca-ide serve` under systemd (`server/orca.service`), paired to the Mac as Orca environment `agent-server`.
+- [x] `orca-ide serve` under systemd (`server/orca.service`). Disabled on 2026-10-27; Alejandro no longer uses Orca.
 - [x] Claude and Codex signed in with their own logins (`~/.claude`, `~/.codex`), independent of Orca.
 - [x] GitHub CLI signed in as `alejoacelas` (`gh auth login --web`, HTTPS, set up as git's credential helper);
   git commits as Alejandro Acelas <alejoacelas@gmail.com>.

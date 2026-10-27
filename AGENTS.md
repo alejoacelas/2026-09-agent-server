@@ -5,7 +5,6 @@ delegated tasks and finish them without checking back with Alejandro.
 
 The server hosts:
 
-- Orca's headless runtime (`orca serve`), paired to the Mac over Tailscale, for worktrees and agents.
 - A worker that pulls triggers from a Val Town endpoint, for jobs like "call ended → process transcript".
 - The WhatsApp bridge from [whatsapp-mcp](https://github.com/lharries/whatsapp-mcp), read-only.
 
