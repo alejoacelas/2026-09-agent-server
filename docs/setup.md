@@ -47,7 +47,7 @@ carry an `agent-copy-source/<original-item-id>` tag for matching, including when
 two originals have the same title. Use item IDs in secret references for those
 ambiguous titles. Keep inventories containing private item names off this repository.
 
-Use `~/.local/bin/op-agent` on the server or `~/best/dotfiles/bin/op-agent` on the
+Use `~/.local/bin/op-agent` on the server or `~/best/stash/dotfiles/bin/op-agent` on the
 Mac. It loads the machine’s service-account token and forwards arguments to `op`.
 For example, `op-agent run --env-file .env.tpl -- your-command` injects references
 to that machine’s agent vault without approval prompts. Ordinary `op` on the Mac
@@ -57,7 +57,7 @@ The Mac token is stored in `~/.config/mac-agents/.env` (mode 600, directory 700)
 Rebuild it from `my.1password.com` › `Personal` ›
 `1Password service account mac-agents` › `credential`, assigning the value to
 `OP_SERVICE_ACCOUNT_TOKEN`. Keep both bootstrap tokens outside the agent vaults.
-The helper source is `~/best/dotfiles/bin/op-agent`; copy it to the server’s
+The helper source is `~/best/stash/dotfiles/bin/op-agent`; copy it to the server’s
 `~/.local/bin/op-agent` when rebuilding.
 
 ## Agent user
