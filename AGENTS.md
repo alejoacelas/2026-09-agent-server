@@ -8,8 +8,7 @@ The server hosts:
 - A worker that pulls triggers from a Val Town endpoint, for jobs like "call ended → process transcript".
 - The WhatsApp bridge from [whatsapp-mcp](https://github.com/lharries/whatsapp-mcp), read-only.
 
-Use the personal identity (`alejoacelas@gmail.com`) for cloud writes. Keep no
-80k material on this server. Record secrets only as 1Password references
+Use the personal identity (`alejoacelas@gmail.com`) for cloud writes. Record secrets only as 1Password references
 (account, vault, item, field). Never commit tokens, IPs of private services, or
 WhatsApp data.
 
