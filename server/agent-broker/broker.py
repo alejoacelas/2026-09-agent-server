@@ -7,12 +7,16 @@ Runs as alejo. Two front doors:
    and file paths must be inside /srv/agent-share, so the agent can't make them read or write
    Alejo's files.
 2. An HTTP proxy on 127.0.0.1:8790 that forwards /<route>/... to an upstream and adds that route's
-   secret, so tools such as git can push to GitHub without holding a token. Routes are in
-   routes.json; secrets come from `gh auth token` or 1Password (`op-agent read`) at start-up.
+   headers, so tools such as git can push to GitHub without holding a token. Routes are in
+   routes.json. A header value may embed 1Password references as {op://vault/item/field}; they are
+   read with `op-agent read` and re-read after SECRET_TTL seconds, so rotating a key needs only a
+   vault update. A route with "allow" forwards only those first path segments (API methods).
 """
 
 import json
 import os
+import re
+import time
 import shutil
 import socket
 import socketserver
@@ -205,15 +209,40 @@ class UnixServer(socketserver.ThreadingMixIn, socketserver.UnixStreamServer):
     daemon_threads = True
 
 
+SECRET_TTL = 300
+OP_REF = re.compile(r"\{(op://[^{}]+)\}")
+_secrets = {}  # reference -> (value, read at)
+_secrets_lock = threading.Lock()
+
+
+def secret(ref):
+    """The value of a 1Password reference or "gh", cached for SECRET_TTL seconds."""
+    with _secrets_lock:
+        value, at = _secrets.get(ref, (None, 0))
+        if value is None or time.time() - at > SECRET_TTL:
+            if ref == "gh":
+                cmd = ["/usr/bin/gh", "auth", "token"]
+            else:
+                cmd = [str(HOME / ".local/bin/op-agent"), "read", ref]
+            value = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout.strip()
+            _secrets[ref] = (value, time.time())
+        return value
+
+
+def route_headers(route):
+    """The headers a route adds, with secrets filled in."""
+    if "secret" in route:  # the original single-header form, used by the github route
+        value = secret(route["secret"])
+        if route.get("basic"):
+            value = "Basic " + b64encode(f"x-access-token:{value}".encode()).decode()
+        return {route["header"]: route.get("prefix", "") + value}
+    return {k: OP_REF.sub(lambda m: secret(m.group(1)), v) for k, v in route["headers"].items()}
+
+
 def load_routes():
     routes = json.loads((HERE / "routes.json").read_text())
-    for name, r in routes.items():
-        if r["secret"] == "gh":
-            value = subprocess.run(["/usr/bin/gh", "auth", "token"], capture_output=True, text=True, check=True).stdout.strip()
-        else:
-            value = subprocess.run([str(HOME / ".local/bin/op-agent"), "read", r["secret"]],
-                                   capture_output=True, text=True, check=True).stdout.strip()
-        r["value"] = ("Basic " + b64encode(f"x-access-token:{value}".encode()).decode()) if r.get("basic") else (r.get("prefix", "") + value)
+    for r in routes.values():
+        route_headers(r)  # fail at start-up, not on first use, if a secret can't be read
     return routes
 
 
@@ -245,12 +274,17 @@ class Proxy(BaseHTTPRequestHandler):
         if not route:
             self.send_error(404, "unknown route")
             return
+        if "allow" in route and rest.split("?", 1)[0].split("/", 1)[0] not in route["allow"]:
+            self.send_error(403, "method not allowed on this route")
+            return
         body = self.read_body() if self.command in ("POST", "PUT", "PATCH") else None
         req = urllib.request.Request(route["upstream"].rstrip("/") + "/" + rest, data=body, method=self.command)
+        added = route_headers(route)
         for k, v in self.headers.items():
-            if k.lower() not in HOP and k.lower() != route["header"].lower():
+            if k.lower() not in HOP and k.lower() not in {h.lower() for h in added}:
                 req.add_header(k, v)
-        req.add_header(route["header"], route["value"])
+        for k, v in added.items():
+            req.add_header(k, v)
         try:
             resp = OPENER.open(req, timeout=600)
         except urllib.error.HTTPError as e:

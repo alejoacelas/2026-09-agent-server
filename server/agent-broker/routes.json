@@ -1,3 +1,37 @@
 {
-  "github": {"upstream": "https://github.com", "header": "Authorization", "secret": "gh", "basic": true}
+  "github": {"upstream": "https://github.com", "header": "Authorization", "secret": "gh", "basic": true},
+  "granola": {
+    "upstream": "https://public-api.granola.ai",
+    "headers": {"Authorization": "Bearer {op://server-agents/muq3to7rl6k5z7yuq663dschie/credential}"}
+  },
+  "anthropic": {
+    "upstream": "https://api.anthropic.com",
+    "headers": {"x-api-key": "{op://server-agents/3la5ndmxz37k757hrfspqlot5m/credential}"}
+  },
+  "slack-bot": {
+    "upstream": "https://slack.com/api",
+    "headers": {"Authorization": "Bearer {op://server-agents/o3jwfpuo4uiwrivnds4y4zrgye/bot_token}"},
+    "allow": ["auth.test", "conversations.open", "conversations.replies", "conversations.history",
+              "chat.postMessage", "chat.update", "reactions.add", "users.info"]
+  },
+  "slack-ai-uplift": {
+    "upstream": "https://slack.com/api",
+    "headers": {
+      "Authorization": "Bearer {op://server-agents/jicfksdymglls7ojojow4civua/xoxc}",
+      "Cookie": "d={op://server-agents/jicfksdymglls7ojojow4civua/xoxd}",
+      "User-Agent": "{op://server-agents/jicfksdymglls7ojojow4civua/user_agent}"
+    },
+    "allow": ["auth.test", "client.counts", "conversations.history", "conversations.replies",
+              "conversations.info", "users.info", "search.messages", "bots.info", "team.info"]
+  },
+  "slack-impact-ops": {
+    "upstream": "https://slack.com/api",
+    "headers": {
+      "Authorization": "Bearer {op://server-agents/sqk7o7tmdu5fc5gaeg4vhdo7wa/xoxc}",
+      "Cookie": "d={op://server-agents/sqk7o7tmdu5fc5gaeg4vhdo7wa/xoxd}",
+      "User-Agent": "{op://server-agents/sqk7o7tmdu5fc5gaeg4vhdo7wa/user_agent}"
+    },
+    "allow": ["auth.test", "client.counts", "conversations.history", "conversations.replies",
+              "conversations.info", "users.info", "search.messages", "bots.info", "team.info"]
+  }
 }
