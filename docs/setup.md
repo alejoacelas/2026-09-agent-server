@@ -188,3 +188,9 @@ runs as `agent`'s user service `gmail-review.service` on `127.0.0.1:8771`,
 with the mail jobs on `agent`'s timers. Tailscale Serve proxies
 `https://agent-server.tail622085.ts.net/mail` to it (tailnet only). The
 project's AGENTS.md covers deploys and data.
+
+## Moderation Bot
+
+`modbot.service`, a user service for `alejo`, runs the AI Uplift Slack
+Moderation Bot from `~/work/slackbots`. Deploys, logs and secrets are in
+[slackbots](/Users/alejo/best/projects/2026-10-27-slackbots/AGENTS.md).
