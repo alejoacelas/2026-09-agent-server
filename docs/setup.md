@@ -192,5 +192,5 @@ project's AGENTS.md covers deploys and data.
 ## Moderation Bot
 
 `modbot.service`, a user service for `alejo`, runs the AI Uplift Slack
-Moderation Bot from `~/work/slackbots`. Deploys, logs and secrets are in
-[slackbots](/Users/alejo/best/projects/2026-10-27-slackbots/AGENTS.md).
+Moderation Bot from `~/work/slack-moderation-bot`. Deploys, logs and secrets are in
+[slack-moderation-bot](/Users/alejo/best/projects/2026-10-31-slack-moderation-bot/AGENTS.md).
