@@ -18,6 +18,7 @@ never holds the tokens; see [Agent user](docs/setup.md#agent-user).
 
 - `docs/setup.md` — current server state, secrets locations, and rebuild steps.
 - `docs/delegation.md` — plan for letting delegated tasks run unattended.
+- `docs/desk-pipeline.md` — spec for recording Alejo's conversations into desk and preparing work for his review.
 
 The server’s `OP_SERVICE_ACCOUNT_TOKEN` is in personal 1Password account
 `my.1password.com`, vault `Personal`, item `1Password service account agent-server`,
